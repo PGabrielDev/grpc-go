@@ -8,10 +8,10 @@ import (
 
 type CategoryService struct {
 	pb.UnimplementedCategoryServiceServer
-	CategoryDB database.Category
+	CategoryDB *database.Category
 }
 
-func NewCategoryService(categoryDB database.Category) *CategoryService {
+func NewCategoryService(categoryDB *database.Category) *CategoryService {
 	return &CategoryService{
 		CategoryDB: categoryDB,
 	}
