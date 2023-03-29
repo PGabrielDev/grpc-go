@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/PGabrielDev/grpc-go/interal/database"
 	"github.com/PGabrielDev/grpc-go/internal/pb"
+	"io"
 )
 
 type CategoryService struct {
@@ -46,4 +47,23 @@ func (c *CategoryService) ListCategories(context.Context, *pb.Blank) (*pb.ListCa
 		})
 	}
 	return &listCategories, err
+}
+
+func (c *CategoryService) CreateCAtegoryStram(stream pb.CategoryService_CreateCAtegoryStramServer) error {
+	categories := &pb.ListCategory{}
+	for {
+		category, err := stream.Recv()
+		if err == io.EOF {
+			return stream.SendAndClose(categories)
+		}
+		if err != nil {
+			return err
+		}
+		cate, err := c.CategoryDB.Create(category.Nome, category.Description)
+		if err != nil {
+			return err
+		}
+		categories.Categories = append(categories.Categories, &pb.Category{Id: cate.ID, Name: cate.Name, Description: cate.Description})
+
+	}
 }

@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type CategoryServiceClient interface {
 	CreateCategory(ctx context.Context, in *CreateCategoryRequest, opts ...grpc.CallOption) (*CategoryResponse, error)
 	ListCategories(ctx context.Context, in *Blank, opts ...grpc.CallOption) (*ListCategory, error)
+	CreateCAtegoryStram(ctx context.Context, opts ...grpc.CallOption) (CategoryService_CreateCAtegoryStramClient, error)
 }
 
 type categoryServiceClient struct {
@@ -52,12 +53,47 @@ func (c *categoryServiceClient) ListCategories(ctx context.Context, in *Blank, o
 	return out, nil
 }
 
+func (c *categoryServiceClient) CreateCAtegoryStram(ctx context.Context, opts ...grpc.CallOption) (CategoryService_CreateCAtegoryStramClient, error) {
+	stream, err := c.cc.NewStream(ctx, &CategoryService_ServiceDesc.Streams[0], "/pb.CategoryService/CreateCAtegoryStram", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &categoryServiceCreateCAtegoryStramClient{stream}
+	return x, nil
+}
+
+type CategoryService_CreateCAtegoryStramClient interface {
+	Send(*CreateCategoryRequest) error
+	CloseAndRecv() (*ListCategory, error)
+	grpc.ClientStream
+}
+
+type categoryServiceCreateCAtegoryStramClient struct {
+	grpc.ClientStream
+}
+
+func (x *categoryServiceCreateCAtegoryStramClient) Send(m *CreateCategoryRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *categoryServiceCreateCAtegoryStramClient) CloseAndRecv() (*ListCategory, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(ListCategory)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // CategoryServiceServer is the server API for CategoryService service.
 // All implementations must embed UnimplementedCategoryServiceServer
 // for forward compatibility
 type CategoryServiceServer interface {
 	CreateCategory(context.Context, *CreateCategoryRequest) (*CategoryResponse, error)
 	ListCategories(context.Context, *Blank) (*ListCategory, error)
+	CreateCAtegoryStram(CategoryService_CreateCAtegoryStramServer) error
 	mustEmbedUnimplementedCategoryServiceServer()
 }
 
@@ -70,6 +106,9 @@ func (UnimplementedCategoryServiceServer) CreateCategory(context.Context, *Creat
 }
 func (UnimplementedCategoryServiceServer) ListCategories(context.Context, *Blank) (*ListCategory, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListCategories not implemented")
+}
+func (UnimplementedCategoryServiceServer) CreateCAtegoryStram(CategoryService_CreateCAtegoryStramServer) error {
+	return status.Errorf(codes.Unimplemented, "method CreateCAtegoryStram not implemented")
 }
 func (UnimplementedCategoryServiceServer) mustEmbedUnimplementedCategoryServiceServer() {}
 
@@ -120,6 +159,32 @@ func _CategoryService_ListCategories_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CategoryService_CreateCAtegoryStram_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(CategoryServiceServer).CreateCAtegoryStram(&categoryServiceCreateCAtegoryStramServer{stream})
+}
+
+type CategoryService_CreateCAtegoryStramServer interface {
+	SendAndClose(*ListCategory) error
+	Recv() (*CreateCategoryRequest, error)
+	grpc.ServerStream
+}
+
+type categoryServiceCreateCAtegoryStramServer struct {
+	grpc.ServerStream
+}
+
+func (x *categoryServiceCreateCAtegoryStramServer) SendAndClose(m *ListCategory) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *categoryServiceCreateCAtegoryStramServer) Recv() (*CreateCategoryRequest, error) {
+	m := new(CreateCategoryRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // CategoryService_ServiceDesc is the grpc.ServiceDesc for CategoryService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -136,6 +201,12 @@ var CategoryService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _CategoryService_ListCategories_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "CreateCAtegoryStram",
+			Handler:       _CategoryService_CreateCAtegoryStram_Handler,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "proto/course_category.proto",
 }
