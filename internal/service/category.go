@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"github.com/PGabrielDev/grpc-go/interal/database"
 	"github.com/PGabrielDev/grpc-go/internal/pb"
 )
@@ -30,4 +31,23 @@ func (c *CategoryService) CreateCategory(ctx context.Context, input *pb.CreateCa
 	return &pb.CategoryResponse{
 		Category: categoryResponse,
 	}, nil
+}
+func (c *CategoryService) ListCategories(context.Context, *pb.Blank) (*pb.ListCategory, error) {
+
+	categories, err := c.CategoryDB.FindAll()
+	fmt.Println(categories)
+	if err != nil {
+		return nil, err
+	}
+	var listCategories pb.ListCategory
+	fmt.Println("Testee")
+	for _, c := range categories {
+		listCategories.Categories = append(listCategories.Categories, &pb.Category{
+			Id:          c.ID,
+			Name:        c.Name,
+			Description: c.Description,
+		})
+	}
+	fmt.Println("Testee")
+	return &listCategories, err
 }
